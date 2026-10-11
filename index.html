@@ -199,12 +199,11 @@ h1 b,h2 b{-webkit-text-stroke:1px #604600;paint-order:stroke fill;text-shadow:0 
 }
 
 /* ---- tentang kami hero: foto utuh tanpa crop ---- */
-.about-hero{min-height:0;padding:150px 0 70px;text-align:center;overflow:hidden;background:#0f1214}
+.hero.dk.about-hero{display:block;padding:150px 0 0;min-height:75vw;text-align:center;overflow:hidden;background:#0f1214}
 .about-bg{position:absolute;inset:-30px;background:url(profile/tentang-kami.jpg) center/cover;filter:blur(26px) saturate(1.1);transform:scale(1.05);z-index:0}
-.about-hero .ov{opacity:.55!important}
-.about-frame{margin:44px auto 0;width:min(100%,1040px);border-radius:26px;overflow:hidden;box-shadow:0 30px 80px #0008;animation:frameIn 1.1s .35s cubic-bezier(.2,.7,.2,1) backwards}
-.about-frame img{display:block;width:100%;height:auto}
-@keyframes frameIn{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+.about-photo-bg{position:absolute;left:0;bottom:0;width:100%;aspect-ratio:4/3;background:url(profile/tentang-kami.jpg) center/100% 100% no-repeat;z-index:0;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 24%);mask-image:linear-gradient(to bottom,transparent 0,#000 24%);animation:bgIn 1.4s ease both}
+.about-hero .ov{background:linear-gradient(to bottom,#000a 0,#0005 24%,#0000 45%)!important;opacity:1!important}
+@keyframes bgIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
 .about-photo{height:auto!important;aspect-ratio:4/3;max-width:460px}
 .av.photo{background:#eee}.av.photo:before,.av.photo:after{display:none}
 .av.photo img{width:100%;height:100%;object-fit:cover;display:block}
@@ -230,7 +229,7 @@ nav{animation:navIn .8s cubic-bezier(.2,.7,.2,1) both}
 .stack.carousel{animation:floaty 6s ease-in-out infinite}
 @keyframes floaty{50%{transform:translateY(-8px)}}
 .footer-contact a{transition:transform .25s}.footer-contact a:hover{transform:translateX(4px)}
-@media(max-width:860px){.about-hero{padding:120px 0 50px}.about-frame{border-radius:18px;margin-top:30px}.rv[data-rv=left],.rv[data-rv=right]{transform:translateY(34px)}}
+@media(max-width:860px){.hero.dk.about-hero{padding:105px 0 0;min-height:calc(75vw + 170px)}.rv[data-rv=left],.rv[data-rv=right]{transform:translateY(34px)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style></head><body>
 <div id="progress"></div><nav id="nav"><a class="logo" href="#/"><img src="assets/logo.png" alt="Ikanin"></a>
@@ -258,7 +257,7 @@ const P={
 <div class="box rv" style="margin-top:10px"><b style="font-size:13px;display:block;margin-bottom:12px">Tangkapan saat berlayar:</b><div class="tags"><span>Belo</span><span>Bandeng</span><span>Teri</span><span>Cumi-cumi</span><span>Teri</span><span>Cumi-cumi</span><span>Bandeng</span></div></div></div>
 <div class="rv" style="background:#fff;margin-top:68px;min-height:490px"><div class="tabs" id="tabs"><button class="act">Tentang Pak Tono</button><button>Hasil tangkapan</button><button>Perjalanan</button><button>Dampak</button></div><div class="tp" id="tp"></div></div></div></div>
 <section><div class="wrap"><div class="hd rv"><h2>Apa yang bisa kita<br>bantu bersama?</h2><p>Kenali peluang menghubungkan hasil tangkapan nelayan dengan produk bernilai tambah.</p></div></div><div class="big-ph rv" style="margin-top:40px"></div></section>${cta}${foot()}`,
-'/tentang':()=>`<section class="hero dk about-hero"><div class="about-bg"></div><div class="ov"></div><div class="wrap"><h1><span style="color:#fff">WE ARE</span><br><b>TEN OUT OF TEN</b></h1><figure class="about-frame"><img src="profile/tentang-kami.jpg" width="2000" height="1500" alt="Tim Ikanin berfoto bersama di taman kampus" fetchpriority="high"></figure></div></section>
+'/tentang':()=>`<section class="hero dk about-hero" role="img" aria-label="Tim Ikanin berfoto bersama di taman kampus"><div class="about-bg"></div><div class="about-photo-bg"></div><div class="ov"></div><div class="wrap"><h1><span style="color:#fff">WE ARE</span><br><b>TEN OUT OF TEN</b></h1></div></section>
 <section><div class="wrap"><div class="cols"><div class="rv"><h2>Visi dan Misi Ikanin</h2><h3 style="margin-top:28px">VISI</h3><p>Untuk mengubah hasil tangkapan yang selama ini terabaikan menjadi peluang bermakna bagi para nelayan, konsumen, dan masa depan lautan kita.</p><h3 style="margin-top:24px">MISI</h3><p>Kami menciptakan produk pangan bergizi dan inovatif dari ikan yang belum dimanfaatkan secara optimal, membangun peluang pasar yang berkelanjutan bagi para nelayan, serta menghubungkan setiap konsumen dengan kisah dan dampak di balik makanan mereka.</p></div><img class="about-photo rv" data-rv="right" src="profile/tentang-kami.jpg" width="2000" height="1500" alt="Tim Ikanin berfoto bersama" loading="lazy"></div></div></section>
 <section class="ceo-section"><div class="wrap"><div class="ceo-card rv"><div class="ceo-copy"><h2>Meet The Mind Behind Ikanin</h2><p>Sastriawati Nur Zahra</p></div><img class="suit" src="assets/pria-berjas.png" alt="Sastriawati Nur Zahra" loading="lazy"></div></div></section>
 <section style="padding-top:0"><div class="wrap"><h2 class="rv">Divisi Ikanin</h2><div class="team-cards"><article class="team-card rv"><img src="profile/divisi marketing.jpg" alt="Divisi pemasaran" loading="lazy"><div><h3>Pemasaran</h3><p>Lucky Queen Alicia Pasaribu<br>Abyan Fauzul Fatih · Muhammad Rakha Habil · Keira Amelia Kimberly</p></div></article><article class="team-card rv"><img src="profile/divisi-produksi.jpg" alt="Divisi produksi" loading="lazy"><div><h3>Produksi</h3><p>Alya Dzakiyah Darussalam<br>Naufal Islami Pasha · Manurung Leonard Togi · Khoirun Nashila</p></div></article><article class="team-card rv"><img src="profile/divisi finance.jpg" alt="Divisi keuangan" loading="lazy"><div><h3>Keuangan</h3><p>Naufa Holisa Abdullah<br>Muhammad Syamil Annashiri · Ahmad Fathir Akbar</p></div></article></div></div></section>
