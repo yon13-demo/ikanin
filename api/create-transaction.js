@@ -2,7 +2,7 @@ const crypto = require('node:crypto');
 const QRCode = require('qrcode');
 const { normalizePhone, supabaseRequest } = require('../lib/supabase');
 
-const UNIT_PRICE = 11000;
+const UNIT_PRICE = 10000;
 const MAX_QUANTITY = 10;
 const PROJECT_SLUG = 'lxpayment';
 

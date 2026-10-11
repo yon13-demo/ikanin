@@ -16,7 +16,7 @@ Tambahkan environment variable berikut di **Vercel Project Settings → Environm
 - `SUPABASE_SERVICE_ROLE_KEY`: service-role key Supabase (simpan hanya di server).
 - `DEMO_ADMIN_ENABLED=true`: opsional untuk mengaktifkan dashboard demo `/leonxlab`.
 
-Jalankan SQL di `supabase/schema.sql` pada Supabase SQL Editor sebelum deployment. Aktifkan Row Level Security; endpoint server mengakses tabel menggunakan service-role key. Slug proyek Pakasir `lxpayment` dan harga Fishbao Rp11.000 per menu digunakan oleh endpoint server. Setelah deployment, atur URL webhook proyek Pakasir ke:
+Jalankan SQL di `supabase/schema.sql` pada Supabase SQL Editor sebelum deployment. Aktifkan Row Level Security; endpoint server mengakses tabel menggunakan service-role key. Slug proyek Pakasir `lxpayment` dan harga Fishbao Rp10.000 per menu digunakan oleh endpoint server. Setelah deployment, atur URL webhook proyek Pakasir ke:
 
 `https://<domain-situs-anda>/api/pakasir-webhook`
 
