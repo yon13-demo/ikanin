@@ -3,6 +3,7 @@ const QRCode = require('qrcode');
 const { normalizePhone, supabaseRequest } = require('../lib/supabase');
 
 const UNIT_PRICE = 10000;
+const MIN_QRIS_AMOUNT = 500;
 const MAX_QUANTITY = 10;
 const PROJECT_SLUG = 'lxpayment';
 
@@ -33,7 +34,9 @@ module.exports = async function createTransaction(req, res) {
   }
 
   let order;
+  let orderCode;
   let customer;
+  let stage = 'customer_lookup';
   try {
     customer = await findCustomer(phone);
     if (!customer) {
@@ -41,6 +44,7 @@ module.exports = async function createTransaction(req, res) {
       if (name.length < 2 || name.length > 120) {
         return res.status(400).json({ error: 'Nama wajib diisi untuk pelanggan baru.' });
       }
+      stage = 'customer_create';
       const query = new URLSearchParams({ on_conflict: 'phone' });
       const created = await supabaseRequest(`customers?${query}`, {
         method: 'POST',
@@ -54,11 +58,13 @@ module.exports = async function createTransaction(req, res) {
       return res.status(502).json({ error: 'Data pelanggan tidak dapat disimpan.' });
     }
 
-    const unitPrice = process.env.DEMO_ADMIN_ENABLED === 'true' && req.body.test_mode === true
+    const testMode = process.env.DEMO_ADMIN_ENABLED === 'true' && req.body.test_mode === true;
+    const unitPrice = testMode
       ? 1
       : UNIT_PRICE;
-    const amount = unitPrice * quantity;
-    const orderCode = `FB${Date.now()}${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    const amount = Math.max(unitPrice * quantity, testMode ? MIN_QRIS_AMOUNT : 0);
+    orderCode = `FB${Date.now()}${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+    stage = 'order_create';
     const createdOrders = await supabaseRequest('orders', {
       method: 'POST',
       headers: { Prefer: 'return=representation' },
@@ -80,6 +86,7 @@ module.exports = async function createTransaction(req, res) {
     const timeout = setTimeout(() => controller.abort(), 15000);
     let response;
     let payment;
+    stage = 'pakasir_create';
     try {
       response = await fetch(
         `https://app.pakasir.com/api/v2/create-transaction/${PROJECT_SLUG}/${orderCode}`,
@@ -99,14 +106,16 @@ module.exports = async function createTransaction(req, res) {
     }
 
     if (!response.ok) {
-      throw new Error('Pakasir gagal membuat QR pembayaran.');
+      throw new Error(`Pakasir mengembalikan HTTP ${response.status}.`);
     }
     if (typeof payment.txn_id !== 'string' || typeof payment.qr_string !== 'string' ||
         !Number.isInteger(payment.total_payment)) {
       throw new Error('Respons QR pembayaran dari Pakasir tidak lengkap.');
     }
 
+    stage = 'qr_encode';
     const qrCode = await QRCode.toDataURL(payment.qr_string, { width: 320, margin: 2 });
+    stage = 'order_update';
     await supabaseRequest(`orders?id=eq.${encodeURIComponent(order.id)}`, {
       method: 'PATCH',
       headers: { Prefer: 'return=minimal' },
@@ -128,12 +137,26 @@ module.exports = async function createTransaction(req, res) {
       qr_code: qrCode
     });
   } catch (error) {
+    console.error(
+      '[create-transaction] %s failed for order %s: %s',
+      stage,
+      orderCode || 'unassigned',
+      error.message || error.name || 'Unknown error'
+    );
     if (order && order.id) {
-      await supabaseRequest(`orders?id=eq.${encodeURIComponent(order.id)}`, {
-        method: 'PATCH',
-        headers: { Prefer: 'return=minimal' },
-        body: JSON.stringify({ payment_status: 'failed' })
-      });
+      try {
+        await supabaseRequest(`orders?id=eq.${encodeURIComponent(order.id)}`, {
+          method: 'PATCH',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify({ payment_status: 'failed' })
+        });
+      } catch (cleanupError) {
+        console.error(
+          '[create-transaction] failed to mark order %s as failed: %s',
+          orderCode || 'unassigned',
+          cleanupError.message || cleanupError.name || 'Unknown error'
+        );
+      }
     }
     const statusCode = error.statusCode || 502;
     return res.status(statusCode).json({
