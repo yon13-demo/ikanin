@@ -2,6 +2,8 @@
 
 Situs Ikanin menggunakan HTML statis di `index.html`, aset di `assets/`, dan Vercel Functions di `api/` untuk pembayaran Fishbao.
 
+Salinan WebP gambar raster situs tersedia di `webp/` dan digunakan oleh halaman untuk mengurangi ukuran unduhan tanpa mengubah resolusi sumber. File asli tetap disimpan di `assets/` dan `profile/`; QR berbentuk SVG tetap dipertahankan sebagai vektor.
+
 ## Deploy ke Vercel
 **Via dashboard:** push folder ini ke GitHub -> vercel.com/new -> Import -> Framework Preset: **Other** -> Deploy
 (Build Command & Output Directory dikosongkan.)
@@ -14,7 +16,7 @@ Tambahkan environment variable berikut di **Vercel Project Settings → Environm
 - `PAKASIR_WEBHOOK_SECRET`: secret untuk memvalidasi webhook Pakasir.
 - `SUPABASE_URL`: URL proyek Supabase.
 - `SUPABASE_SERVICE_ROLE_KEY`: service-role key Supabase (simpan hanya di server).
-- `DEMO_ADMIN_ENABLED=true`: opsional untuk mengaktifkan dashboard demo `/leonxlab`.
+- `DEMO_ADMIN_ENABLED=true`: opsional untuk mengaktifkan dashboard demo `/leonxlab`. Dashboard menyediakan mode testing Rp1/menu yang tersimpan di browser yang mengaktifkannya; mode ini hanya berlaku saat variabel ini aktif.
 
 Jalankan SQL di `supabase/schema.sql` pada Supabase SQL Editor sebelum deployment. Aktifkan Row Level Security; endpoint server mengakses tabel menggunakan service-role key. Slug proyek Pakasir `lxpayment` dan harga Fishbao Rp10.000 per menu digunakan oleh endpoint server. Setelah deployment, atur URL webhook proyek Pakasir ke:
 

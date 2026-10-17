@@ -54,7 +54,10 @@ module.exports = async function createTransaction(req, res) {
       return res.status(502).json({ error: 'Data pelanggan tidak dapat disimpan.' });
     }
 
-    const amount = UNIT_PRICE * quantity;
+    const unitPrice = process.env.DEMO_ADMIN_ENABLED === 'true' && req.body.test_mode === true
+      ? 1
+      : UNIT_PRICE;
+    const amount = unitPrice * quantity;
     const orderCode = `FB${Date.now()}${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
     const createdOrders = await supabaseRequest('orders', {
       method: 'POST',
