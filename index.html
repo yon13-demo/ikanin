@@ -152,6 +152,13 @@ nav.open>.btn{display:inline-flex;order:4}
 .order-history{display:grid;gap:10px;margin:14px 0}
 .history-item{padding:12px 14px;border-radius:12px;background:#f5f6f4;font-size:13px}
 .history-item strong{display:block;margin-bottom:3px}
+.history-item--pending{background:#fff7db;border:1px solid #f0d47d}
+.history-item--completed{background:#e8f7ed;border:1px solid #a8dfb7}
+.history-item--failed,.history-item--expired{background:#fff0f0;border:1px solid #efb4b4}
+.history-item__status{display:block;margin-top:4px;font-weight:700}
+.payment-status--success{background:#e8f7ed;color:#176b35}
+.payment-status--pending{background:#fff7db;color:#775900}
+.payment-status--failed{background:#fff0f0;color:#a21e1e}
 .admin-wrap{display:grid;gap:18px}
 .admin-notice{padding:16px 18px;background:#fff0ca;border:1px solid #edce7b;border-radius:14px;font-size:14px}
 .admin-test-control{padding:18px 20px;background:#fff;border:1px solid #e8e9e7;border-radius:14px}
@@ -277,14 +284,15 @@ ${cta}${foot()}`,
 async function readApiResponse(response){const text=await response.text();let result;
 try{result=text?JSON.parse(text):{}}catch{throw new Error(`Server mengirim error ${response.status}: ${text.slice(0,160)||'respons tidak valid'}`)}
 if(!response.ok)throw new Error(result.error||`Permintaan gagal (${response.status}).`);return result}
+function getOrderDisplayState(order,now=Date.now()){if(order.payment_status==='pending'){const createdAt=Date.parse(order.created_at);if(Number.isFinite(createdAt)&&now-createdAt>=24*60*60*1000)return{state:'expired',payment:'Pembayaran gagal',order:'Dibatalkan'}}if(order.payment_status==='completed')return{state:'completed',payment:'Lunas',order:orderLabels[order.order_status]||order.order_status};if(order.payment_status==='failed')return{state:'failed',payment:'Pembayaran gagal',order:'Dibatalkan'};return{state:'pending',payment:'Menunggu pembayaran',order:orderLabels[order.order_status]||order.order_status}}
+const orderLabels={menunggu_pembayaran:'Menunggu pembayaran',sedang_dibuat:'Pesanan sedang dibuat',selesai:'Selesai'};
 function renderOrderHistory(container,orders){container.replaceChildren();
 if(!orders.length){container.textContent='Belum ada riwayat pesanan.';return}
-const paymentLabels={creating:'Menyiapkan pembayaran',pending:'Menunggu pembayaran',completed:'Lunas',failed:'Pembayaran gagal'};
-const orderLabels={menunggu_pembayaran:'Menunggu pembayaran',sedang_dibuat:'Pesanan sedang dibuat',selesai:'Selesai'};
-orders.forEach(order=>{const item=document.createElement('div');item.className='history-item';
+orders.forEach(order=>{const display=getOrderDisplayState(order),item=document.createElement('div');item.className=`history-item history-item--${display.state}`;
 const heading=document.createElement('strong');heading.textContent=`${order.order_code} · ${new Date(order.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}`;
-const details=document.createElement('span');details.textContent=`${order.quantity} menu · ${paymentLabels[order.payment_status]||order.payment_status} · ${orderLabels[order.order_status]||order.order_status}`;
-item.append(heading,details);container.append(item)})}
+const details=document.createElement('span');details.textContent=`${order.quantity} menu`;
+const status=document.createElement('span');status.className='history-item__status';status.textContent=display.state==='pending'?display.payment:`${display.payment} · ${display.order}`;
+item.append(heading,details,status);container.append(item)})}
 (()=>{const bar=document.getElementById('progress');let tick=false;const upd=()=>{const h=document.documentElement.scrollHeight-innerHeight;bar.style.transform='scaleX('+(h>0?Math.min(scrollY/h,1):0)+')';tick=false};addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(upd)}},{passive:true});addEventListener('hashchange',upd)})();
 function route(){nav.classList.remove('open');const hashPath=location.hash.slice(1).split('?')[0],path=location.pathname.replace(/\/+$/,'')||'/',h=hashPath||(path==='/leonxlab'?'/leonxlab':'/'),p=P[h]?h:'/';
 const a=$('#app');a.style.animation='none';a.offsetHeight;a.style.animation='';a.innerHTML=P[p]();scrollTo(0,0);
@@ -313,25 +321,34 @@ const t=$('#tabs');if(t){const tp=$('#tp'),panels=[
 const show=index=>{tp.innerHTML=`<b>${panels[index][0]}</b><p>${panels[index][1]}</p>`};show(0);
 t.querySelectorAll('button').forEach((button,index)=>button.addEventListener('click',()=>{t.querySelectorAll('button').forEach(x=>x.classList.remove('act'));button.classList.add('act');show(index)}))}
 const testModeToggle=$('#test-mode-toggle');if(testModeToggle){testModeToggle.checked=isTestModeEnabled();testModeToggle.addEventListener('change',()=>localStorage.setItem(TEST_MODE_KEY,testModeToggle.checked?'true':'false'))}
-const orderForm=$('#order-form');if(orderForm){const phone=$('#phone'),nameField=$('#name-field'),name=$('#customer-name'),message=$('#customer-message'),history=$('#order-history'),lookup=$('#lookup-customer'),status=$('#payment-status'),qrPanel=$('#qr-payment');let checkedPhone='';
-const checkCustomer=async()=>{const value=phone.value.trim();if(!value)throw new Error('Masukkan nomor telepon terlebih dahulu.');
-message.textContent='Memeriksa nomor dan riwayat pesanan...';
-const response=await fetch('/api/customer-lookup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:value})}),result=await readApiResponse(response);
-checkedPhone=value;renderOrderHistory(history,result.orders||[]);
+const orderForm=$('#order-form');if(orderForm){const phone=$('#phone'),nameField=$('#name-field'),name=$('#customer-name'),message=$('#customer-message'),history=$('#order-history'),lookup=$('#lookup-customer'),status=$('#payment-status'),qrPanel=$('#qr-payment');let checkedPhone='',activeOrderCode='',historyPoll=null,polling=false;
+const setStatus=(text,state='')=>{status.className='payment-status';if(state)status.classList.add(`payment-status--${state}`);status.textContent=text};
+const stopHistoryPoll=()=>{if(historyPoll){clearInterval(historyPoll);historyPoll=null}};
+const checkCustomer=async({quiet=false,showCompletedNotice=true}={})=>{const value=phone.value.trim();if(!value)throw new Error('Masukkan nomor telepon terlebih dahulu.');
+if(!quiet)message.textContent='Memeriksa nomor dan riwayat pesanan...';
+const response=await fetch('/api/customer-lookup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:value})}),result=await readApiResponse(response),orders=result.orders||[];
+checkedPhone=value;renderOrderHistory(history,orders);
 if(result.registered){name.value=result.customer_name;name.required=false;nameField.hidden=true;message.textContent=`Halo, ${result.customer_name}. Riwayat pesanan kamu dimuat.`}
 else{name.value='';name.required=true;nameField.hidden=false;message.textContent='Nomor belum terdaftar. Masukkan nama untuk membuat data pelanggan baru.'}
+const activeOrder=activeOrderCode?orders.find(order=>order.order_code===activeOrderCode):null;
+const activeState=activeOrder?getOrderDisplayState(activeOrder):null;
+const completedOrder=activeOrder?.payment_status==='completed'?activeOrder:(!activeOrderCode&&showCompletedNotice&&orders[0]?.payment_status==='completed'?orders[0]:null);
+if(completedOrder){qrPanel.hidden=true;$('#qr-image').removeAttribute('src');stopHistoryPoll();setStatus('Pembayaran diterima. Pesanan Anda akan dibuat. Anda akan dihubungi oleh tim Ikanin melalui WhatsApp.','success')}
+else if(activeState?.state==='expired'||activeOrder?.payment_status==='failed'){qrPanel.hidden=true;$('#qr-image').removeAttribute('src');stopHistoryPoll();setStatus('Pembayaran gagal · Pesanan dibatalkan karena melewati batas 24 jam.','failed')}
+else if(activeOrder?.payment_status==='pending'){setStatus('Menunggu pembayaran. QRIS akan diperbarui otomatis setelah pembayaran terkonfirmasi.','pending')}
 return result};
 lookup.addEventListener('click',async()=>{lookup.disabled=true;try{await checkCustomer()}catch(error){message.textContent=error.message}finally{lookup.disabled=false}});
-phone.addEventListener('input',()=>{checkedPhone='';nameField.hidden=true;name.required=false;history.replaceChildren();message.textContent='';status.textContent='';qrPanel.hidden=true});
-orderForm.addEventListener('submit',async event=>{event.preventDefault();const button=orderForm.querySelector('[type="submit"]');button.disabled=true;status.textContent='Membuat pesanan dan QRIS...';qrPanel.hidden=true;
-try{if(checkedPhone!==phone.value.trim())await checkCustomer();
+phone.addEventListener('input',()=>{stopHistoryPoll();checkedPhone='';activeOrderCode='';nameField.hidden=true;name.required=false;history.replaceChildren();message.textContent='';setStatus('');qrPanel.hidden=true;$('#qr-image').removeAttribute('src')});
+orderForm.addEventListener('submit',async event=>{event.preventDefault();const button=orderForm.querySelector('[type="submit"]');button.disabled=true;stopHistoryPoll();activeOrderCode='';setStatus('Membuat pesanan dan QRIS...','pending');qrPanel.hidden=true;$('#qr-image').removeAttribute('src');
+try{if(checkedPhone!==phone.value.trim())await checkCustomer({quiet:true,showCompletedNotice:false});
 if(!nameField.hidden&&name.value.trim().length<2)throw new Error('Nama wajib diisi untuk pelanggan baru.');
 const response=await fetch('/api/create-transaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:phone.value,name:name.value,quantity:Number($('#quantity').value),test_mode:isTestModeEnabled()})}),result=await readApiResponse(response);
 if(!result.qr_code||!result.order_code)throw new Error('QR pembayaran tidak lengkap. Silakan coba lagi.');
-$('#qr-image').src=result.qr_code;$('#qr-details').textContent=`Pesanan ${result.order_code} · Total pembayaran Rp${Number(result.total_payment).toLocaleString('id-ID')} · Menunggu pembayaran`;
+activeOrderCode=result.order_code;$('#qr-image').src=result.qr_code;$('#qr-details').textContent=`Pesanan ${result.order_code} · Total pembayaran Rp${Number(result.total_payment).toLocaleString('id-ID')} · Menunggu pembayaran`;
 renderOrderHistory(history,[{order_code:result.order_code,created_at:result.created_at,quantity:result.quantity,payment_status:'pending',order_status:'menunggu_pembayaran'}]);
-qrPanel.hidden=false;status.textContent='Pesanan sudah dibuat. Pindai QRIS untuk menyelesaikan pembayaran.';checkedPhone=phone.value.trim()}
-catch(error){status.textContent=error.message||'Pesanan tidak dapat dibuat.'}finally{button.disabled=false}})}
+qrPanel.hidden=false;setStatus('Pesanan sudah dibuat. Pindai QRIS untuk menyelesaikan pembayaran.','pending');checkedPhone=phone.value.trim();
+historyPoll=setInterval(async()=>{if(!document.querySelector('#order-form')){stopHistoryPoll();return}if(document.visibilityState==='hidden'||polling)return;polling=true;try{await checkCustomer({quiet:true})}catch(error){message.textContent=error.message}finally{polling=false}},8000)}
+catch(error){setStatus(error.message||'Pesanan tidak dapat dibuat.','failed')}finally{button.disabled=false}})}
 if(p==='/leonxlab'){const body=$('#admin-orders'),message=$('#admin-message'),refresh=$('#refresh-admin');
 const loadOrders=async()=>{refresh.disabled=true;message.textContent='Memuat daftar pesanan...';body.replaceChildren();
 try{const result=await readApiResponse(await fetch('/api/admin-orders'));if(!result.orders.length){const row=body.insertRow();const cell=row.insertCell();cell.colSpan=8;cell.textContent='Belum ada pesanan.';message.textContent='0 pesanan.';return}

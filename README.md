@@ -24,6 +24,8 @@ Jalankan SQL di `supabase/schema.sql` pada Supabase SQL Editor sebelum deploymen
 
 Endpoint server membuat QRIS Pakasir, menyimpan pelanggan/pesanan, dan menerima status pembayaran melalui webhook. Halaman `/leonxlab` tanpa login bersifat publik; aktifkan hanya untuk demo dengan data uji, lalu hapus/nonaktifkan `DEMO_ADMIN_ENABLED` sebelum memakai data pelanggan sungguhan. Pembayaran dan Supabase memerlukan deployment di Vercel; membuka `index.html` langsung dari file lokal tidak menyediakan fungsi API tersebut.
 
+Halaman beli memeriksa status pesanan aktif secara berkala selama QR ditampilkan. Setelah webhook mengonfirmasi pembayaran, QR disembunyikan dan konfirmasi tindak lanjut WhatsApp ditampilkan. Riwayat menandai pembayaran pending berwarna kuning sampai 24 jam, pembayaran selesai berwarna hijau, dan pending yang lebih dari 24 jam berwarna merah sebagai dibatalkan.
+
 **Via CLI:**
     npm i -g vercel
     vercel --prod
