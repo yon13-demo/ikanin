@@ -2,12 +2,13 @@
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ikanin.co</title><link rel="icon" href="webp/assets-logo-png.webp">
-<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--y:#FFD233;--yd:#F2B705;--k:#1a1a1a;--bg:#f4f4f4;--sea:linear-gradient(160deg,#6f8fa3,#3d5a6b 55%,#2a3b45);--fish:linear-gradient(135deg,#c9d3d8,#8c9aa3 50%,#e8e2c8);--dark:linear-gradient(160deg,#2b3236,#0f1214);--sand:linear-gradient(160deg,#7fc3e0,#3f8fb5 60%,#d9b27a);padding-top:env(safe-area-inset-top,0)}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:Raleway,Arial,sans-serif;background:var(--bg);color:var(--k);overflow-x:hidden;line-height:1.5}
+body{font-family:Poppins,Arial,sans-serif;background:var(--bg);color:var(--k);overflow-x:hidden;line-height:1.5}
+button,input{font-family:inherit}
 a{color:inherit;text-decoration:none}
 #app{animation:in .6s ease both}
 @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -38,7 +39,6 @@ nav.sm{top:12px;height:64px;box-shadow:0 10px 30px #0003}
 h1{font-size:clamp(38px,5.4vw,60px);line-height:1.1;font-weight:700}
 h2{font-size:clamp(28px,3.6vw,42px);line-height:1.2;font-weight:700}
 h1 b,h2 b{color:var(--y)}
-h1 b,h2 b{-webkit-text-stroke:1.5px #111;paint-order:stroke fill;text-shadow:0 2px 5px #0008}
 .hero p{max-width:480px;font-size:14px;margin:26px 0 52px}
 .cols{display:flex;align-items:center;justify-content:space-between;gap:40px}
 .stack{position:relative;width:300px;height:300px;flex:none}
@@ -204,8 +204,6 @@ nav.open>.btn{display:inline-flex;order:4}
 @media(max-width:560px){
 .team-cards{grid-template-columns:1fr}.team-card img{height:260px}.purchase-panel h2{font-size:28px}
 .stats h2{font-size:48px}.footer-contact{gap:14px}
-h1,h2{text-shadow:0 2px 5px #0003}
-h1 b,h2 b{-webkit-text-stroke:1px #604600;paint-order:stroke fill;text-shadow:0 1px 3px #0004}
 .hero.home-hero{background:linear-gradient(160deg,#fff5d6 0%,#fffaf0 58%,var(--bg) 100%)}
 .hero.home-hero h1 b{color:var(--y)}
 .ceo-card{grid-template-columns:1fr;gap:0;min-height:0;padding:30px 24px 0}
@@ -214,18 +212,22 @@ h1 b,h2 b{-webkit-text-stroke:1px #604600;paint-order:stroke fill;text-shadow:0 
 .ceo-card .suit{width:min(100%,340px);max-height:380px}
 }
 
+.hero.y h1 b,h2 b{color:#b47d00}
+.hero.dk h1 b,.hero.dk h2 b{color:var(--y)}
+  
 /* ---- tentang kami banner ---- */
 .hero.dk.about-hero{display:grid;grid-template-rows:265px 50vw;padding:0;min-height:0;text-align:center;overflow:hidden;background:#0f1214}
 .about-photo-bg{position:absolute;inset:0;width:100%;height:100%;background:url(webp/profile-background-banner.webp) center center/100% 100% no-repeat;z-index:0;animation:bgIn 1.4s ease both}
 .about-hero .ov{background:rgba(0,0,0,.82)!important;opacity:1!important}
 .about-hero .wrap{grid-row:1;align-self:end;padding-bottom:10px}
 .about-hero h1{font-size:clamp(34px,4vw,52px);line-height:1.05}
-.about-hero h1 b{color:#FFE04A;-webkit-text-stroke:.7px #111;text-shadow:0 2px 5px #000}
+.about-hero h1 b{color:#FFE04A}
 @keyframes bgIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
 .about-photo{height:auto!important;aspect-ratio:2.2/1;max-width:460px;object-fit:cover;object-position:center bottom}
 .av.photo{background:#eee}.av.photo:before,.av.photo:after{display:none}
 .av.photo img{width:100%;height:100%;object-fit:cover;display:block}
-.hostnote{max-width:none!important;margin:14px auto 0!important;text-align:center;font-size:7px!important;line-height:1.2;opacity:.28;letter-spacing:.02em}
+.hostnote{max-width:none!important;margin:14px auto 0!important;text-align:center;font-size:7px!important;line-height:1.2;opacity:.45;letter-spacing:.02em}
+.hostnote:hover{opacity:.9}
 .hostnote a{text-decoration:none}.hostnote .hv{color:#111;font-weight:700}.hostnote .hl{color:#d98a00;font-weight:700}.hostnote a:hover{opacity:1;text-decoration:underline}
 /* ---- animasi (hanya transform/opacity => ringan) ---- */
 .rv{transition-delay:var(--d,0ms)}
@@ -261,9 +263,12 @@ function isTestModeEnabled(){return localStorage.getItem(TEST_MODE_KEY)==='true'
 function fishbaoPrice(){return `Rp${(isTestModeEnabled()?1:10000).toLocaleString('id-ID')}`}
 const cta=`<div class="cta rv"><h2>Menyajikan kebaikan gizi murni dari laut nelayan pilihan</h2><a class="btn dk" href="#/beli">Pesan Fishbao · ${fishbaoPrice()}</a></div>`;
 const foot=()=>`<footer><div class="wrap"><div><h4>Ikanin.co</h4><p>Mari bersama mendukung keberlanjutan sektor perikanan lokal dan pemenuhan gizi sehat keluarga Indonesia.</p></div><div class="footer-contact"><a href="mailto:ikaniiinn@gmail.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>ikaniiinn@gmail.com</a><a href="https://instagram.com/ikanin.co" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>@ikanin.co</a><a href="#/privasi">Kebijakan Privasi</a><a href="mailto:support@leonxlab.com?subject=Report%20Bug%20Ikanin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 8a4 4 0 0 1 8 0v7a4 4 0 0 1-8 0z"/><path d="M12 12v8M4 13h4M16 13h4M5 7l3 2M19 7l-3 2M5 20l3-2M19 20l-3-2"/></svg>Report bug</a></div></div><div class="line"></div><p class="hostnote">
-  <strong>LXL.WEB.ID</strong> is the official digital information portal of
-  <a href="https://leonxlab.com" target="_blank" rel="noreferrer" class="hl">LeonXLab.com</a>,
-  serving as a central hub for its projects, services, infrastructure, and development activities.
+  Laman web Ikanin berjalan di infrastruktur
+  <a href="https://lxl.web.id" target="_blank" rel="noopener noreferrer" class="hv">LXL.WEB.ID</a>,
+  portal digital
+  <a href="https://leonxlab.com" target="_blank" rel="noopener noreferrer" class="hl">LeonXLab.com</a>
+  yang dikelola oleh
+  <a href="https://leonxlab.com/perseroan" target="_blank" rel="noopener noreferrer" class="hv">PT Luminous Leon Labs</a>.
 </p></footer>`;
 const P={
 '/' :()=>`<section class="hero y home-hero"><div class="wrap cols"><div><h1>Dari Nelayan,<br><b>Untuk Kalian.</b></h1><p>Menghubungkan kebaikan gizi murni hasil laut Indonesia langsung dari nelayan lokal menuju meja konsumen melalui ekosistem digital terintegrasi.</p><a class="btn dk" href="#/nelayan">Ayo Jelajahi Ekosistem Ikanin! <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div><div class="stack h carousel rv"><i></i><i></i><i></i><button class="slide-control prev" type="button" aria-label="Foto sebelumnya"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button><button class="slide-control next" type="button" aria-label="Foto berikutnya"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button></div></div></section>
