@@ -82,7 +82,7 @@ footer h4{font-size:20px}footer p{font-size:13px;max-width:210px;margin-top:10px
 .av:after{content:"";position:absolute;width:112px;height:80px;border-radius:50% 50% 0 0;background:#fff;left:49px;top:118px}
 .tabs{display:flex;justify-content:space-around;border-bottom:1px solid #ddd;font-size:14px;overflow-x:auto}
 .tabs button{background:none;border:0;padding:20px 18px;font:inherit;color:#777;cursor:pointer;position:relative;white-space:nowrap}
-.tabs button.act{color:var(--y)}
+.tabs button.act{color:var(--logo)}
 .tabs button:after{content:"";position:absolute;left:50%;bottom:-1px;height:2px;width:0;background:var(--y);transition:.3s;transform:translateX(-50%)}
 .tabs button.act:after{width:80%}
 .tp{padding:34px 40px 60px;font-size:14px;min-height:300px}
@@ -212,8 +212,12 @@ nav.open>.btn{display:inline-flex;order:4}
 .ceo-card .suit{width:min(100%,340px);max-height:380px}
 }
 
-.hero.y h1 b,h2 b{color:#b47d00}
-.hero.dk h1 b,.hero.dk h2 b{color:var(--y)}
+:root{--logo:#E8A900}
+h1 b,h2 b,
+.hero.home-hero h1 b,
+.hero.y h1 b,
+.hero.dk h1 b,.hero.dk h2 b,
+.about-hero h1 b{color:var(--logo)}
   
 /* ---- tentang kami banner ---- */
 .hero.dk.about-hero{display:grid;grid-template-rows:265px 50vw;padding:0;min-height:0;text-align:center;overflow:hidden;background:#0f1214}
